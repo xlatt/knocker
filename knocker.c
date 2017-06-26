@@ -6,9 +6,7 @@
 #include <linux/netfilter.h>
 #include <linux/netfilter_ipv4.h>
 #include <linux/rwsem.h>
-#include <linux/spinlock.h>
 #include <linux/time.h>
-#include <linux/preempt.h>
 
 #define KPORT_1 14234
 #define KPORT_2 9786
