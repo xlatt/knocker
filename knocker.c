@@ -1,5 +1,5 @@
-#include <linux/module.h>	// Needed by all modules
-#include <linux/kernel.h>	// Needed for KERN_INFO
+#include <linux/module.h>
+#include <linux/kernel.h>
 #include <linux/skbuff.h>
 #include <linux/ip.h>
 #include <linux/tcp.h>
@@ -127,7 +127,7 @@ static unsigned int check_dst_port(void *priv, struct sk_buff *skb, const struct
 	struct iphdr *ih;
  	__be16 dport = 0;
 
-	print_dbg("[KNOCKER] hook func called\n");
+	print_dbg("[KNOCKER] hook func called");
 
 	th = (struct tcphdr*)skb_transport_header(skb);
 	ih = (struct iphdr*)skb_network_header(skb);
