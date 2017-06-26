@@ -18,6 +18,14 @@
 	x = y;					\
 	up_write(&lock);
 
+#define DBG_PRINT
+
+#ifdef DBG_PRINT
+	#define print_dbg(msg) printk(KERN_DEBUG msg)
+#else
+	#define print_dbg(msg)
+#endif
+
 static struct nf_hook_ops hook_check_port;
 static struct nf_hook_ops hook_insert_rst;
 
@@ -33,7 +41,7 @@ static void insert_port_knock(__be16 port)
 	time_t now;
 	struct timespec tm;
 
-	printk(KERN_INFO "[KNOCKER] inserting port knock for port: %d", port);
+	print_dbg("[KNOCKER] inserting port knock");
 
 	getnstimeofday(&tm);
 	now = tm.tv_sec;
@@ -49,7 +57,7 @@ static void insert_port_knock(__be16 port)
 		locked_assignment(knock_lock, port_knocks[2], now);
 		break;
 	default:
-		printk(KERN_ERR "[KNOCKER] invalid knock port: %d", port);
+		print_dbg("[KNOCKER] invalid knock port");
 	}	
 }
 
@@ -75,11 +83,11 @@ static bool knock_ok(void)
 	delta = now - last_knock;
 
 	if (delta > 5 || (d0 > 3 || d1 > 3)) {
-		printk(KERN_INFO "[KNOCKER] knock NOT OK");
+		print_dbg("[KNOCKER] knock NOT OK");
 		return false;
 	}
 	
-	printk(KERN_INFO "[KNOCKER] knock OK");
+	print_dbg("[KNOCKER] knock OK");
 	return true;
 }
 
@@ -87,7 +95,7 @@ static bool knock_ok(void)
 static bool is_port_hidden(void)
 {
 	bool ret = false;
-	printk(KERN_INFO "[KNOCKER] checking if port is hidden");
+	print_dbg("[KNOCKER] checking if port is hidden");
 	
 	down_read(&port_hidden_lock);
 	ret = port_hidden;
@@ -99,7 +107,7 @@ static bool is_port_hidden(void)
 
 static void do_hide_port(void)
 {
-	printk(KERN_INFO "[KNOCKER] hiding port");
+	print_dbg("[KNOCKER] hiding port");
 
 	locked_assignment(port_hidden_lock, port_hidden, true);
 }
@@ -107,7 +115,7 @@ static void do_hide_port(void)
 
 static void do_unhide_port(void)
 {
-	printk(KERN_INFO "[KNOCKER] un-hiding port");
+	print_dbg("[KNOCKER] un-hiding port");
 	
 	locked_assignment(port_hidden_lock, port_hidden, false);
 }
@@ -119,7 +127,7 @@ static unsigned int check_dst_port(void *priv, struct sk_buff *skb, const struct
 	struct iphdr *ih;
  	__be16 dport = 0;
 
-	printk(KERN_INFO "[KNOCKER] hook func called\n");
+	print_dbg("[KNOCKER] hook func called\n");
 
 	th = (struct tcphdr*)skb_transport_header(skb);
 	ih = (struct iphdr*)skb_network_header(skb);
@@ -168,7 +176,7 @@ static unsigned int insert_rst(void *priv, struct sk_buff *skb, const struct nf_
 	sport = ntohs(th->source);
 
 	if (sport == HIDE_PORT && is_port_hidden()) {
-		printk(KERN_INFO "[KNOCKER] changing flag to RST");
+		print_dbg("[KNOCKER] changing flag to RST");
 		th->rst = 1;
 		th->ack = 0;
 	}
@@ -179,7 +187,7 @@ static unsigned int insert_rst(void *priv, struct sk_buff *skb, const struct nf_
 
 int init_module(void)
 {
-	printk(KERN_INFO "[KNOCKER] module loaded\n");
+	print_dbg("[KNOCKER] module loaded\n");
 
 	port_hidden = false;
 	port_knocks[0] = 0;
@@ -206,7 +214,7 @@ int init_module(void)
 
 void cleanup_module(void)
 {
-	printk(KERN_INFO "[KNOCKER] module unloaded\n");
+	print_dbg("[KNOCKER] module unloaded\n");
 
 	nf_unregister_hook(&hook_check_port);
 	nf_unregister_hook(&hook_insert_rst);
