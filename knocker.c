@@ -129,13 +129,13 @@ static unsigned int check_dst_port(void *priv, struct sk_buff *skb, const struct
 
 	print_dbg("[KNOCKER] hook func called");
 
-	th = (struct tcphdr*)skb_transport_header(skb);
 	ih = (struct iphdr*)skb_network_header(skb);
 
 	if (ih->protocol == IPPROTO_UDP) {
 		return NF_ACCEPT;
 	}
 	
+	th = (struct tcphdr*)skb_transport_header(skb);
 	dport = ntohs(th->dest);
 
 	if (dport == HIDE_PORT && !is_port_hidden() && !knock_ok()) {
